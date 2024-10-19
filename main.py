@@ -2,29 +2,49 @@ import numpy as np
 from numpy.linalg import norm
 
 
-def interior_point_algorithm(
-        initial_x: list[float],
+def is_inapplicable(
         A: list[list[float]],
         c: list[float],
+) -> bool:
+    is_inapplicable_flag = False
+    for i in range(len(c)):
+        if -c[i] <= 0:
+            # print(c[i])
+            is_inapplicable_flag = True
+            for j in range(len(A)):
+                if A[j][i] > 0: is_inapplicable_flag = False
+            if is_inapplicable_flag: break
+    return is_inapplicable_flag
+
+
+def interior_point_algorithm(
+        initial_x: list[float],
+        initial_A: list[list[float]],
+        initial_c: list[float],
         alpha: float,
         epsilon: float,
-):
+) -> None:
     """
     Performs the interior point algorithm for optimization.
 
     :param initial_x: Initial value of the variable x.
-    :param A: Coefficient matrix.
-    :param c: Coefficients of the objective function.
+    :param initial_A: Coefficient matrix.
+    :param initial_c: Coefficients of the objective function.
     :param alpha: Parameter controlling the step size.
     :param epsilon: Convergence parameter.
     """
     x = np.array(initial_x, float)
-    A = np.array(A, float)
-    c = np.array(c, float)
+    A = np.array(initial_A, float)
+    c = np.array(initial_c, float)
 
     iteration = 1
 
     while True:
+
+        if is_inapplicable(initial_A, initial_c):
+            print("Method is not applicable")
+            break
+
         v = x
         D = np.diag(x)
         AA = np.dot(A, D)
@@ -43,10 +63,9 @@ def interior_point_algorithm(
         iteration += 1
 
         if norm(np.subtract(yy, v), ord=2) < epsilon:
+            print("In the last iteration ", iteration, "we have x =\n", x, "with alpha = ", alpha)
+            print("Value of objective function is: ", np.dot(c, np.transpose(x)))
             break
-
-    print("In the last iteration ", iteration, "we have x =\n", x, "with alpha = ", alpha)
-    print("Value of objective function is: ", np.dot(c, np.transpose(x)))
 
 
 def read_input():
@@ -71,9 +90,17 @@ def main():
 
     interior_point_algorithm(
         initial_x=vector_x,
-        A=matrix_A,
-        c=vector_c,
+        initial_A=matrix_A,
+        initial_c=vector_c,
         alpha=0.5,
+        epsilon=0.00001,
+    )
+
+    interior_point_algorithm(
+        initial_x=vector_x,
+        initial_A=matrix_A,
+        initial_c=vector_c,
+        alpha=0.9,
         epsilon=0.00001,
     )
 
