@@ -3,9 +3,9 @@ from numpy.linalg import norm
 
 
 def interior_point_algorithm(
-        initial_x: list[int],
-        A: list[list[int]],
-        c: list[int],
+        initial_x: list[float],
+        A: list[list[float]],
+        c: list[float],
         alpha: float,
         epsilon: float,
 ):
@@ -45,21 +45,22 @@ def interior_point_algorithm(
         if norm(np.subtract(yy, v), ord=2) < epsilon:
             break
 
-    print("In the last iteration", iteration, "we have x =\n", *x)
+    print("In the last iteration ", iteration, "we have x =\n", x, "with alpha = ", alpha)
+    print("Value of objective function is: ", np.dot(c, np.transpose(x)))
 
 
 def read_input():
-    vector_x = [int(i) for i in input(
+    vector_x = [float(i) for i in input(
         "Print the initial trial solution that lies in the interior of the feasible region, i.e. inside the boundary of the feasible region: ", ).split()]
     n = int(input("Print the number of constraints functions: ", ))
     print("Input constraints functions line by line:")
     matrix_A = []
 
     for _ in range(n):
-        a_i = [int(i) for i in input().split()]
+        a_i = [float(i) for i in input().split()]
         matrix_A.append(a_i)
 
-    vector_c = [int(i) for i in input(
+    vector_c = [float(i) for i in input(
         "A vector of coefficients of objective function:", ).split()]
 
     return vector_x, matrix_A, vector_c
@@ -73,7 +74,7 @@ def main():
         A=matrix_A,
         c=vector_c,
         alpha=0.5,
-        epsilon=0.0001,
+        epsilon=0.00001,
     )
 
 
