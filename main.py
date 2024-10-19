@@ -48,15 +48,30 @@ def interior_point_algorithm(
     print("In the last iteration", iteration, "we have x =\n", *x)
 
 
+def read_input():
+    vector_x = [int(i) for i in input(
+        "Print the initial trial solution that lies in the interior of the feasible region, i.e. inside the boundary of the feasible region: ", ).split()]
+    n = int(input("Print the number of constraints functions: ", ))
+    print("Input constraints functions line by line:")
+    matrix_A = []
+
+    for _ in range(n):
+        a_i = [int(i) for i in input().split()]
+        matrix_A.append(a_i)
+
+    vector_c = [int(i) for i in input(
+        "A vector of coefficients of objective function:", ).split()]
+
+    return vector_x, matrix_A, vector_c
+
+
 def main():
+    vector_x, matrix_A, vector_c = read_input()
+
     interior_point_algorithm(
-        initial_x=[1, 1, 1, 315, 174, 169],
-        A=[
-            [18, 15, 12, 1, 0, 0],
-            [6, 4, 8, 0, 1, 0],
-            [5, 3, 3, 0, 0, 1]
-        ],
-        c=[9, 10, 16, 0, 0, 0],
+        initial_x=vector_x,
+        A=matrix_A,
+        c=vector_c,
         alpha=0.5,
         epsilon=0.0001,
     )
