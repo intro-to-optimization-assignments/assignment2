@@ -9,7 +9,6 @@ def is_inapplicable(
     is_inapplicable_flag = False
     for i in range(len(c)):
         if -c[i] <= 0:
-            # print(c[i])
             is_inapplicable_flag = True
             for j in range(len(A)):
                 if A[j][i] > 0: is_inapplicable_flag = False
@@ -69,31 +68,34 @@ def interior_point_algorithm(
 
 
 def read_input():
-    vector_x = [float(i) for i in input(
-        "Print the initial trial solution that lies in the interior of the feasible region, i.e. inside the boundary of the feasible region: ", ).split()]
-    n = int(input("Print the number of constraints functions: ", ))
-    print("Input constraints functions line by line:")
+    vector_c = [float(i) for i in input(
+            "A vector of coefficients of objective function: "
+        ).split()]
+
+    n = int(input("The number of constraints functions: "))
+    print("Constraints functions line by line: ")
     matrix_A = []
 
     for _ in range(n):
         a_i = [float(i) for i in input().split()]
         matrix_A.append(a_i)
 
-    vector_c = [float(i) for i in input(
-        "A vector of coefficients of objective function:", ).split()]
-
-    return vector_x, matrix_A, vector_c
+    vector_x = [float(i) for i in input(
+            "The initial feasible trial solution: "
+        ).split()]
+    accuracy = int(input("Approximation accuracy: "))
+    return vector_x, matrix_A, vector_c, 0.1 ** accuracy
 
 
 def main():
-    vector_x, matrix_A, vector_c = read_input()
+    vector_x, matrix_A, vector_c, epsilon = read_input()
 
     interior_point_algorithm(
         initial_x=vector_x,
         initial_A=matrix_A,
         initial_c=vector_c,
         alpha=0.5,
-        epsilon=0.00001,
+        epsilon=epsilon,
     )
 
     interior_point_algorithm(
@@ -101,7 +103,7 @@ def main():
         initial_A=matrix_A,
         initial_c=vector_c,
         alpha=0.9,
-        epsilon=0.00001,
+        epsilon=epsilon,
     )
 
 
