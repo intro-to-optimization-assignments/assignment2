@@ -2,20 +2,6 @@ import numpy as np
 from numpy.linalg import norm
 
 
-def is_inapplicable(
-        A: list[list[float]],
-        c: list[float],
-) -> bool:
-    is_inapplicable_flag = False
-    for i in range(len(c)):
-        if -c[i] <= 0:
-            is_inapplicable_flag = True
-            for j in range(len(A)):
-                if A[j][i] > 0: is_inapplicable_flag = False
-            if is_inapplicable_flag: break
-    return is_inapplicable_flag
-
-
 def interior_point_algorithm(
         initial_x: list[float],
         initial_A: list[list[float]],
@@ -36,55 +22,70 @@ def interior_point_algorithm(
     A = np.array(initial_A, float)
     c = np.array(initial_c, float)
 
-    iteration = 1
+    iteration = 0
 
     while True:
+        iteration += 1
+        try:
+            v = x
+            D = np.diag(x)
 
-        if is_inapplicable(initial_A, initial_c):
+            A_tilda = np.dot(A, D)
+            c_tilda = np.dot(D, c)
+
+            I = np.eye(len(c))
+
+            A_tilda_A_tr = np.dot(A_tilda, np.transpose(A_tilda))
+            A_tilda_A_tr_inverse = np.linalg.inv(A_tilda_A_tr)
+            H = np.dot(np.transpose(A_tilda), A_tilda_A_tr_inverse)
+
+            P = np.subtract(I, np.dot(H, A_tilda))
+
+            c_p = np.dot(P, c_tilda)
+
+            if np.min(c_p) >= 0:
+                raise ValueError("c_p must contain at least one negative element")
+            nu = np.abs(np.min(c_p))
+
+            x_tilda = np.add(np.ones(len(c), float), (alpha / nu) * c_p)
+            new_x = np.dot(D, x_tilda)
+            x = new_x
+        except():
             print("Method is not applicable")
             break
 
-        v = x
-        D = np.diag(x)
-        AA = np.dot(A, D)
-        cc = np.dot(D, c)
-        I = np.eye(len(c))
-        F = np.dot(AA, np.transpose(AA))
-        FI = np.linalg.inv(F)
-        H = np.dot(np.transpose(AA), FI)
-        P = np.subtract(I, np.dot(H, AA))
-        cp = np.dot(P, cc)
-        nu = np.abs(np.min(cp))
-        y = np.add(np.ones(len(c), float), (alpha / nu) * cp)
-        yy = np.dot(D, y)
-        x = yy
-
-        iteration += 1
-
-        if norm(np.subtract(yy, v), ord=2) < epsilon:
-            print("In the last iteration ", iteration, "we have x =\n", x, "with alpha = ", alpha)
+        if norm(np.subtract(new_x, v), ord=2) < epsilon:
+            print(
+                f"In the last iteration {iteration} we have x =", x,
+                f"with alpha = {alpha}",
+                sep='\n'
+            )
             print("Value of objective function is: ", np.dot(c, np.transpose(x)))
             break
 
 
 def read_input():
-    vector_c = [float(i) for i in input(
-            "A vector of coefficients of objective function: "
-        ).split()]
+    vector_c = [float(c) for c in input(
+        "A vector of coefficients of objective function: "
+    ).split()]
 
     n = int(input("The number of constraints functions: "))
+
     print("Constraints functions line by line: ")
     matrix_A = []
 
     for _ in range(n):
-        a_i = [float(i) for i in input().split()]
+        a_i = [float(a_i_j) for a_i_j in input().split()]
         matrix_A.append(a_i)
 
-    vector_x = [float(i) for i in input(
-            "The initial feasible trial solution: "
-        ).split()]
+    vector_x = [float(x) for x in input(
+        "The initial feasible trial solution: "
+    ).split()]
+
     accuracy = int(input("Approximation accuracy: "))
-    return vector_x, matrix_A, vector_c, 0.1 ** accuracy
+    epsilon = 0.1 ** accuracy
+
+    return vector_x, matrix_A, vector_c, epsilon
 
 
 def main():
