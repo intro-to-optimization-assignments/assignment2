@@ -1,5 +1,9 @@
+import math
+
 import numpy as np
 from numpy.linalg import norm
+
+from simplex import Simplex
 
 
 def interior_point_algorithm(
@@ -30,25 +34,26 @@ def interior_point_algorithm(
             v = x
             D = np.diag(x)
 
-            A_tilda = np.dot(A, D)
-            c_tilda = np.dot(D, c)
+            A_tilde = np.dot(A, D)
+            c_tilde = np.dot(D, c)
 
             I = np.eye(len(c))
 
-            A_tilda_A_tr = np.dot(A_tilda, np.transpose(A_tilda))
-            A_tilda_A_tr_inverse = np.linalg.inv(A_tilda_A_tr)
-            H = np.dot(np.transpose(A_tilda), A_tilda_A_tr_inverse)
+            A_tilde_A_tr = np.dot(A_tilde, np.transpose(A_tilde))
+            A_tilde_A_tr_inverse = np.linalg.inv(A_tilde_A_tr)
+            H = np.dot(np.transpose(A_tilde), A_tilde_A_tr_inverse)
 
-            P = np.subtract(I, np.dot(H, A_tilda))
+            P = np.subtract(I, np.dot(H, A_tilde))
 
-            c_p = np.dot(P, c_tilda)
+            c_p = np.dot(P, c_tilde)
 
             if np.min(c_p) >= 0:
-                raise ValueError("c_p must contain at least one negative element")
+                print("Method is not applicable")
+                break
             nu = np.abs(np.min(c_p))
 
-            x_tilda = np.add(np.ones(len(c), float), (alpha / nu) * c_p)
-            new_x = np.dot(D, x_tilda)
+            x_tilde = np.add(np.ones(len(c), float), (alpha / nu) * c_p)
+            new_x = np.dot(D, x_tilde)
             x = new_x
         except():
             print("Method is not applicable")
@@ -79,17 +84,19 @@ def read_input():
         matrix_A.append(a_i)
 
     vector_x = [float(x) for x in input(
-        "The initial feasible trial solution: "
+        "The initial point: "
     ).split()]
+
+    constraints_rhs = list(map(float, input("A vector of right-hand side numbers: ").split()))
 
     accuracy = int(input("Approximation accuracy: "))
     epsilon = 0.1 ** accuracy
 
-    return vector_x, matrix_A, vector_c, epsilon
+    return vector_x, matrix_A, vector_c, epsilon, constraints_rhs
 
 
 def main():
-    vector_x, matrix_A, vector_c, epsilon = read_input()
+    vector_x, matrix_A, vector_c, epsilon, constraints_rhs = read_input()
 
     interior_point_algorithm(
         initial_x=vector_x,
@@ -106,6 +113,14 @@ def main():
         alpha=0.9,
         epsilon=epsilon,
     )
+
+    simplex = Simplex(
+        vector_c,
+        matrix_A,
+        constraints_rhs,
+        int(math.log(epsilon, 0.1))
+    )
+    simplex.compute_maximum()
 
 
 if __name__ == "__main__":
